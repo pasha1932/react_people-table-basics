@@ -8,11 +8,21 @@ type Props = {
 };
 
 export const PeopleTable: React.FC<Props> = ({ people }) => {
-  const { slug } = useParams();
-
+  const { slugId } = useParams();
   const findPersonByName = (name: string) => {
     return people.find(person => person.name === name);
   };
+
+  const peopleWithParents = people.map(person => {
+    const mother = person.motherName
+      ? findPersonByName(person.motherName)
+      : undefined;
+    const father = person.fatherName
+      ? findPersonByName(person.fatherName)
+      : undefined;
+
+    return { ...person, mother, father };
+  });
 
   return (
     <table
@@ -31,20 +41,13 @@ export const PeopleTable: React.FC<Props> = ({ people }) => {
       </thead>
 
       <tbody>
-        {people.map(person => {
-          const mother = person.motherName
-            ? findPersonByName(person.motherName)
-            : null;
-          const father = person.fatherName
-            ? findPersonByName(person.fatherName)
-            : null;
-
+        {peopleWithParents.map(person => {
           return (
             <tr
               data-cy="person"
               key={person.slug}
               className={classNames({
-                'has-background-warning': slug === person.slug,
+                'has-background-warning': slugId === person.slug,
               })}
             >
               <td>
@@ -55,8 +58,8 @@ export const PeopleTable: React.FC<Props> = ({ people }) => {
               <td>{person.born}</td>
               <td>{person.died}</td>
               <td>
-                {mother ? (
-                  <PersonLink person={mother} />
+                {person.mother ? (
+                  <PersonLink person={person.mother} />
                 ) : person.motherName ? (
                   person.motherName
                 ) : (
@@ -64,8 +67,8 @@ export const PeopleTable: React.FC<Props> = ({ people }) => {
                 )}
               </td>
               <td>
-                {father ? (
-                  <PersonLink person={father} />
+                {person.father ? (
+                  <PersonLink person={person.father} />
                 ) : person.fatherName ? (
                   person.fatherName
                 ) : (
